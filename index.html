@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>AI비서 만들기</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;600;700&family=Nanum+Gothic+Coding:wght@400;700&display=swap');
@@ -69,53 +69,63 @@
 
   *{box-sizing:border-box;}
   html,body{ margin:0; padding:0; }
+  img{ max-width:100%; }
   body{
     background:var(--bg);
     color:var(--text);
     font-family:'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
-    line-height:1.65;
-    padding-inline:20px;
-    padding-block: 28px 64px;
+    line-height:1.6;
+    padding-inline:16px;
+    padding-block: 0 88px;
   }
   h1,h2,h3{ font-family:'Gowun Batang', serif; font-weight:700; text-wrap:balance; margin:0; }
   a{ color:var(--primary); }
-  img{ max-width:100%; }
-  .wrap{ max-width:760px; margin:0 auto; }
+  .wrap{ max-width:640px; margin:0 auto; }
 
-  /* ---------- hero ---------- */
-  .hero{ padding-block:8px 28px; border-bottom:1px solid var(--border); margin-bottom:32px; }
+  /* ---------- top bar (brand + tabs) ---------- */
+  .topbar{
+    position:sticky; top:env(safe-area-inset-top,0px); z-index:30;
+    background:var(--bg); margin-inline:-16px; padding-inline:16px;
+    border-bottom:1px solid var(--border);
+  }
+  .topbar .brand{
+    display:flex; align-items:baseline; gap:8px; padding:14px 0 10px;
+  }
+  .topbar .brand b{ font-size:17px; }
+  .topbar .brand span{ font-size:12px; color:var(--text-muted); font-family:'Nanum Gothic Coding',monospace; }
+
+  .tabnav{
+    display:flex; gap:6px; overflow-x:auto; padding-bottom:10px; -webkit-overflow-scrolling:touch;
+  }
+  .tabnav::-webkit-scrollbar{ display:none; }
+  .tabnav button{
+    flex:none; font-family:'Noto Sans KR'; text-decoration:none; font-size:13px; font-weight:600; color:var(--text-muted);
+    background:var(--surface); border:1px solid var(--border); border-radius:999px; cursor:pointer;
+    padding:8px 14px; white-space:nowrap; min-height:36px;
+  }
+  .tabnav button.active{ background:var(--primary); border-color:var(--primary); color:var(--primary-ink); }
+
+  main{ padding-top:18px; }
+  .panel{ scroll-margin-top:64px; }
+
+  section{ margin-block:32px; }
+  section:first-child{ margin-top:0; }
+  section > h2{ font-size:21px; margin-bottom:14px; }
+  .section-lead{ color:var(--text-muted); margin-bottom:16px; font-size:15px; }
+
+  .hero{ padding-block:2px 8px; }
   .eyebrow{
     display:inline-flex; align-items:center; gap:8px;
-    font-family:'Nanum Gothic Coding', monospace; font-size:12.5px; letter-spacing:.04em;
+    font-family:'Nanum Gothic Coding', monospace; font-size:12px; letter-spacing:.04em;
     color:var(--primary); background:var(--primary-soft); border-radius:999px;
-    padding:5px 12px; margin-bottom:14px;
+    padding:5px 12px; margin-bottom:12px;
   }
-  .hero h1{ font-size:clamp(28px,5vw,40px); line-height:1.25; margin-bottom:14px; }
-  .hero p.lede{ color:var(--text-muted); font-size:16.5px; max-width:62ch; }
-
-  /* ---------- step nav ---------- */
-  .stepnav{
-    position:sticky; top:0;
-    z-index:20; background:var(--bg);
-    display:flex; gap:6px; overflow-x:auto; padding-block:10px 14px;
-    margin-bottom:8px; -webkit-overflow-scrolling:touch;
-  }
-  .stepnav::-webkit-scrollbar{ display:none; }
-  .stepnav a{
-    flex:none; text-decoration:none; font-size:13px; font-weight:500; color:var(--text-muted);
-    background:var(--surface); border:1px solid var(--border); border-radius:999px;
-    padding:7px 13px; white-space:nowrap;
-  }
-  .stepnav a:hover{ border-color:var(--primary); color:var(--primary); }
-
-  section{ margin-block:44px; }
-  section > h2{ font-size:22px; margin-bottom:16px; }
-  .section-lead{ color:var(--text-muted); margin-bottom:18px; }
+  .hero h1{ font-size:clamp(24px,7vw,32px); line-height:1.28; margin-bottom:12px; }
+  .hero p.lede{ color:var(--text-muted); font-size:15.5px; }
 
   /* ---------- before/after ---------- */
-  .compare{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-  @media (max-width:520px){ .compare{ grid-template-columns:1fr; } }
-  .compare .card{ border-radius:14px; padding:18px 18px 20px; border:1px solid var(--border); background:var(--surface); }
+  .compare{ display:grid; grid-template-columns:1fr; gap:12px; }
+  .compare .card{ border-radius:14px; padding:16px 16px 18px; border:1px solid var(--border); background:var(--surface); }
   .compare .card.bad{ border-color:color-mix(in srgb, var(--amber) 35%, var(--border)); }
   .compare .card.good{ border-color:color-mix(in srgb, var(--teal) 35%, var(--border)); }
   .compare .tag{ font-size:12px; font-weight:700; letter-spacing:.03em; }
@@ -125,94 +135,97 @@
   .compare li + li{ margin-top:6px; }
 
   /* ---------- overview flow ---------- */
-  .flow{ display:flex; align-items:flex-start; justify-content:space-between; gap:4px; overflow-x:auto; padding-bottom:6px; }
-  .flow .node{ flex:1; min-width:96px; text-align:center; position:relative; }
+  .flow{ display:flex; align-items:flex-start; justify-content:space-between; gap:2px; }
+  .flow .node{
+    flex:1; min-width:0; text-align:center; position:relative; background:none; border:none;
+    font-family:inherit; padding:0; cursor:pointer;
+  }
   .flow .node .circle{
-    width:34px; height:34px; margin:0 auto 8px; border-radius:50%;
+    width:32px; height:32px; margin:0 auto 6px; border-radius:50%;
     background:var(--surface); border:2px solid var(--primary); color:var(--primary);
-    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px;
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px;
     font-family:'Nanum Gothic Coding', monospace; position:relative; z-index:2;
   }
-  .flow .node .label{ font-size:12.5px; color:var(--text-muted); line-height:1.3; }
+  .flow .node .label{ font-size:11px; color:var(--text-muted); line-height:1.25; }
   .flow .node:not(:last-child)::after{
-    content:""; position:absolute; top:17px; left:calc(50% + 24px); right:calc(-50% + 24px);
+    content:""; position:absolute; top:16px; left:calc(50% + 22px); right:calc(-50% + 22px);
     height:2px; background:var(--border); z-index:1;
   }
 
   /* ---------- step card ---------- */
   .step{
-    background:var(--surface); border:1px solid var(--border); border-radius:18px;
-    padding:26px 24px 28px; box-shadow:var(--shadow); scroll-margin-top:64px;
+    background:var(--surface); border:1px solid var(--border); border-radius:16px;
+    padding:20px 16px 22px; box-shadow:var(--shadow);
   }
-  .step-head{ display:flex; align-items:flex-start; gap:16px; margin-bottom:6px; }
+  .step-head{ display:flex; align-items:flex-start; gap:14px; margin-bottom:4px; }
   .step-num{
-    font-family:'Gowun Batang', serif; font-weight:700; font-size:34px; color:var(--primary-soft);
-    -webkit-text-stroke:1.4px var(--primary); color:transparent; line-height:1; flex:none; padding-top:2px;
+    font-family:'Gowun Batang', serif; font-weight:700; font-size:30px; color:var(--primary-soft);
+    -webkit-text-stroke:1.3px var(--primary); color:transparent; line-height:1; flex:none; padding-top:2px;
   }
-  .step-head h3{ font-size:19px; color:var(--text); line-height:1.35; }
-  .step-head .sub{ font-family:'Noto Sans KR'; font-weight:500; font-size:13.5px; color:var(--text-muted); margin-top:4px; }
+  .step-head h3{ font-size:18px; color:var(--text); line-height:1.35; }
+  .step-head .sub{ font-family:'Noto Sans KR'; font-weight:500; font-size:13px; color:var(--text-muted); margin-top:4px; }
 
-  .pillrow{ display:flex; gap:8px; flex-wrap:wrap; margin:16px 0 4px; }
-  .pill{ font-size:12px; font-weight:700; padding:3px 10px; border-radius:999px; }
+  .pillrow{ display:flex; gap:8px; flex-wrap:wrap; margin:14px 0 4px; }
+  .pill{ font-size:11.5px; font-weight:700; padding:3px 10px; border-radius:999px; }
   .pill.why{ background:var(--amber-soft); color:var(--amber); }
   .pill.what{ background:var(--primary-soft); color:var(--primary); }
   .pill.how{ background:var(--teal-soft); color:var(--teal); }
 
-  .step p{ margin:10px 0; font-size:15px; }
+  .step p{ margin:10px 0; font-size:14.5px; }
   .step .analogy{
-    font-size:14.5px; color:var(--text-muted); background:var(--surface-2); border-radius:10px;
-    padding:12px 14px; margin:10px 0 4px; border-left:3px solid var(--primary);
+    font-size:14px; color:var(--text-muted); background:var(--surface-2); border-radius:10px;
+    padding:12px 13px; margin:10px 0 4px; border-left:3px solid var(--primary);
   }
 
   ol.howto{ margin:12px 0 0; padding-left:0; list-style:none; counter-reset:step; }
   ol.howto li{
-    counter-increment:step; position:relative; padding:9px 0 9px 34px; font-size:14.5px;
+    counter-increment:step; position:relative; padding:9px 0 9px 32px; font-size:14px;
     border-top:1px dashed var(--border);
   }
   ol.howto li:first-child{ border-top:none; }
   ol.howto li::before{
-    content:counter(step); position:absolute; left:0; top:9px; width:22px; height:22px; border-radius:6px;
+    content:counter(step); position:absolute; left:0; top:9px; width:21px; height:21px; border-radius:6px;
     background:var(--primary-soft); color:var(--primary); font-family:'Nanum Gothic Coding',monospace;
-    font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center;
+    font-size:11.5px; font-weight:700; display:flex; align-items:center; justify-content:center;
   }
   ol.howto b{ color:var(--text); }
   ol.howto code, p code, li code{
     font-family:'Nanum Gothic Coding', monospace; background:var(--surface-2); border:1px solid var(--border);
-    border-radius:5px; padding:1px 6px; font-size:13px;
+    border-radius:5px; padding:1px 6px; font-size:12.5px;
   }
 
   /* schematic ui mock */
   .mock{ border:1px solid var(--border); border-radius:12px; overflow:hidden; margin:16px 0; background:var(--surface-2); }
   .mock .bar{ display:flex; align-items:center; gap:6px; padding:8px 10px; border-bottom:1px solid var(--border); }
   .mock .bar i{ width:8px; height:8px; border-radius:50%; background:var(--border); }
-  .mock .bar .url{ font-family:'Nanum Gothic Coding',monospace; font-size:11.5px; color:var(--text-muted); margin-left:6px; }
-  .mock .body{ padding:14px 14px 16px; }
+  .mock .bar .url{ font-family:'Nanum Gothic Coding',monospace; font-size:11px; color:var(--text-muted); margin-left:6px; }
+  .mock .body{ padding:13px 13px 15px; }
   .mock .btn{
-    display:inline-block; font-size:12.5px; font-weight:700; color:var(--primary-ink); background:var(--primary);
+    display:inline-block; font-size:12px; font-weight:700; color:var(--primary-ink); background:var(--primary);
     border-radius:7px; padding:5px 11px; margin:2px 6px 2px 0;
   }
   .mock .ghost{
-    display:inline-block; font-size:12.5px; color:var(--text-muted); border:1px dashed var(--border);
+    display:inline-block; font-size:12px; color:var(--text-muted); border:1px dashed var(--border);
     border-radius:7px; padding:5px 11px; margin:2px 6px 2px 0;
   }
-  .mock .caption{ font-size:11.5px; color:var(--text-muted); text-align:center; padding:6px 0 2px; }
+  .mock .caption{ font-size:11px; color:var(--text-muted); text-align:center; padding:6px 0 2px; }
 
   /* copy box */
   .copybox{ position:relative; margin:14px 0; }
   .copybox pre{
-    font-family:'Nanum Gothic Coding', monospace; font-size:13.3px; line-height:1.7; color:var(--code-ink);
-    background:var(--code-bg); border:1px solid var(--code-border); border-radius:12px; padding:16px 52px 16px 16px;
+    font-family:'Nanum Gothic Coding', monospace; font-size:13px; line-height:1.65; color:var(--code-ink);
+    background:var(--code-bg); border:1px solid var(--code-border); border-radius:12px; padding:15px 48px 15px 14px;
     white-space:pre-wrap; word-break:break-word; margin:0;
   }
   .copybox button{
-    position:absolute; top:10px; right:10px; font-size:12px; font-weight:700; cursor:pointer;
+    position:absolute; top:9px; right:9px; font-size:11.5px; font-weight:700; cursor:pointer;
     border:1px solid var(--code-border); background:#ffffff14; color:var(--code-ink); border-radius:7px;
-    padding:5px 9px; font-family:'Noto Sans KR';
+    padding:5px 9px; font-family:'Noto Sans KR'; min-height:30px;
   }
-  .copybox button:focus-visible, a:focus-visible, .stepnav a:focus-visible{ outline:2px solid var(--primary); outline-offset:2px; }
+  .copybox button:focus-visible, a:focus-visible, .tabnav button:focus-visible, .navbtn:focus-visible{ outline:2px solid var(--primary); outline-offset:2px; }
   .copybox button:hover{ background:#ffffff26; }
 
-  .callout{ display:flex; gap:10px; border-radius:12px; padding:13px 15px; margin:16px 0; font-size:14px; }
+  .callout{ display:flex; gap:10px; border-radius:12px; padding:13px 14px; margin:16px 0; font-size:13.5px; }
   .callout .ico{ flex:none; font-family:'Nanum Gothic Coding',monospace; font-weight:700; font-size:12px; width:20px;height:20px;border-radius:50%; display:flex;align-items:center;justify-content:center; margin-top:1px;}
   .callout.tip{ background:var(--teal-soft); color:var(--text); }
   .callout.tip .ico{ background:var(--teal); color:#fff; }
@@ -220,266 +233,330 @@
   .callout.warn .ico{ background:var(--amber); color:#fff; }
   .callout b{ display:block; margin-bottom:2px; }
 
-  .stepgap{ height:16px; }
-
   /* mistakes */
   .mistakes{ display:grid; gap:10px; }
-  .mistake{ display:flex; gap:12px; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:13px 15px; }
+  .mistake{ display:flex; gap:12px; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:13px 14px; }
   .mistake .x{ flex:none; font-family:'Nanum Gothic Coding',monospace; font-weight:700; color:var(--amber); font-size:13px; }
-  .mistake p{ margin:0; font-size:14px; }
-  .mistake .fix{ display:block; margin-top:4px; color:var(--teal); font-size:13.3px; font-weight:600;}
+  .mistake p{ margin:0; font-size:13.5px; }
+  .mistake .fix{ display:block; margin-top:4px; color:var(--teal); font-size:13px; font-weight:600;}
 
-  footer{ margin-top:52px; padding-top:18px; border-top:1px solid var(--border); font-size:12.5px; color:var(--text-muted); }
-  footer a{ color:var(--text-muted); text-decoration:underline; }
+  footer{ margin-top:36px; padding-top:16px; border-top:1px solid var(--border); font-size:12px; color:var(--text-muted); }
+
+  /* ---------- bottom wizard bar ---------- */
+  .bottombar{
+    position:fixed; left:0; right:0; bottom:0; z-index:30;
+    background:var(--surface); border-top:1px solid var(--border);
+    padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+  }
+  .navbtn{
+    font-family:'Noto Sans KR'; font-weight:700; font-size:14px; border-radius:10px; cursor:pointer;
+    padding:10px 16px; min-height:44px; border:1px solid var(--border);
+  }
+  .navbtn.primary{ background:var(--primary); color:var(--primary-ink); border-color:var(--primary); }
+  .navbtn.ghost{ background:var(--surface); color:var(--text); }
+  .navbtn[disabled]{ opacity:.35; pointer-events:none; }
+  .progress{ font-family:'Nanum Gothic Coding',monospace; font-size:12.5px; color:var(--text-muted); flex:none; }
+
+  [hidden]{ display:none !important; }
 </style>
 </head>
 <body>
 
+
 <div class="wrap">
 
-  <header class="hero">
-    <span class="eyebrow">CLAUDE PROJECTS 실전 가이드</span>
-    <h1>나만의 AI 비서 만들기</h1>
-    <p class="lede">Claude의 &ldquo;Project&rdquo;와 &ldquo;커넥터&rdquo;를 조합하면, 내 업무 맥락을 기억하고 내 자료·메일함·캘린더까지 들여다보는 전용 AI 비서를 만들 수 있습니다. 이 가이드는 처음 해보는 분도 그대로 따라 하면 완성되도록, 5단계로 나눠 안내합니다.</p>
+  <header class="topbar">
+    <div class="brand"><b>🤖 나만의 AI 비서 만들기</b></div>
+    <nav class="tabnav" aria-label="단계 이동">
+      <button type="button" data-target="intro" class="active">시작하기</button>
+      <button type="button" data-target="step1">1 · 생성</button>
+      <button type="button" data-target="step2">2 · 지침</button>
+      <button type="button" data-target="step3">3 · 자료</button>
+      <button type="button" data-target="step4">4 · 커넥터</button>
+      <button type="button" data-target="step5">5 · 활용</button>
+      <button type="button" data-target="mistakes">흔한 실수</button>
+    </nav>
   </header>
 
-  <nav class="stepnav" aria-label="단계 이동">
-    <a href="#intro">왜 필요한가</a>
-    <a href="#step1">1. 프로젝트 생성</a>
-    <a href="#step2">2. 지침 설정</a>
-    <a href="#step3">3. 자료 업로드</a>
-    <a href="#step4">4. 커넥터 연결</a>
-    <a href="#step5">5. 실전 활용</a>
-    <a href="#mistakes">흔한 실수</a>
-  </nav>
+  <main id="panelHost">
 
-  <section id="intro">
-    <h2>왜 &ldquo;Project&rdquo;가 곧 AI 비서인가</h2>
-    <p class="section-lead">일반 채팅창은 대화가 끝나면 맥락이 사라집니다. Project는 다릅니다 &mdash; 신입 직원 한 명에게 <b>업무 매뉴얼, 참고 자료, 도구 접근 권한</b>을 한 번에 세팅해주는 것과 같습니다. 한 번 세팅해두면, 그 다음부터는 매번 설명할 필요 없이 바로 일을 시킬 수 있습니다.</p>
-    <div class="compare">
-      <div class="card bad">
-        <span class="tag">일반 채팅</span>
-        <ul>
-          <li>대화창을 새로 열 때마다 배경 설명 반복</li>
-          <li>참고 자료를 매번 다시 첨부</li>
-          <li>내 메일함·캘린더는 전혀 알지 못함</li>
-        </ul>
+    <section id="intro" class="panel">
+      <div class="hero">
+        <span class="eyebrow">CLAUDE PROJECTS 실전 가이드</span>
+        <h1>나만의 AI 비서 만들기</h1>
+        <p class="lede">Claude의 &ldquo;Project&rdquo;와 &ldquo;커넥터&rdquo;를 조합하면, 내 업무 맥락을 기억하고 내 자료·메일함·캘린더까지 들여다보는 전용 AI 비서를 만들 수 있습니다. 위 탭을 눌러 원하는 단계로 바로 이동해보세요.</p>
       </div>
-      <div class="card good">
-        <span class="tag">Project로 만든 AI 비서</span>
-        <ul>
-          <li>역할·톤·규칙이 모든 대화에 자동 적용</li>
-          <li>업로드한 자료를 항상 기억하고 참고</li>
-          <li>커넥터로 실시간 메일·캘린더·문서까지 연동</li>
-        </ul>
+
+      <section>
+        <h2>왜 &ldquo;Project&rdquo;가 곧 AI 비서인가</h2>
+        <p class="section-lead">일반 채팅창은 대화가 끝나면 맥락이 사라집니다. Project는 다릅니다 &mdash; 신입 직원 한 명에게 <b>업무 매뉴얼, 참고 자료, 도구 접근 권한</b>을 한 번에 세팅해주는 것과 같습니다. 한 번 세팅해두면, 그 다음부터는 매번 설명할 필요 없이 바로 일을 시킬 수 있습니다.</p>
+        <div class="compare">
+          <div class="card bad">
+            <span class="tag">일반 채팅</span>
+            <ul>
+              <li>대화창을 새로 열 때마다 배경 설명 반복</li>
+              <li>참고 자료를 매번 다시 첨부</li>
+              <li>내 메일함·캘린더는 전혀 알지 못함</li>
+            </ul>
+          </div>
+          <div class="card good">
+            <span class="tag">Project로 만든 AI 비서</span>
+            <ul>
+              <li>역할·톤·규칙이 모든 대화에 자동 적용</li>
+              <li>업로드한 자료를 항상 기억하고 참고</li>
+              <li>커넥터로 실시간 메일·캘린더·문서까지 연동</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>완성까지 5단계</h2>
+        <p class="section-lead">원 아이콘을 눌러도 해당 단계로 바로 이동합니다.</p>
+        <div class="flow">
+          <button type="button" class="node" data-target="step1"><span class="circle">1</span><span class="label">프로젝트<br>생성</span></button>
+          <button type="button" class="node" data-target="step2"><span class="circle">2</span><span class="label">지침<br>설정</span></button>
+          <button type="button" class="node" data-target="step3"><span class="circle">3</span><span class="label">자료<br>업로드</span></button>
+          <button type="button" class="node" data-target="step4"><span class="circle">4</span><span class="label">커넥터<br>연결</span></button>
+          <button type="button" class="node" data-target="step5"><span class="circle">5</span><span class="label">실전<br>대화</span></button>
+        </div>
+      </section>
+    </section>
+
+    <section id="step1" class="panel step" hidden>
+      <div class="step-head">
+        <div class="step-num">1</div>
+        <div>
+          <h3>프로젝트 만들기</h3>
+          <div class="sub">AI 비서가 살아갈 &ldquo;전용 공간&rdquo;을 먼저 만듭니다</div>
+        </div>
       </div>
-    </div>
-  </section>
+      <div class="pillrow"><span class="pill why">왜</span><span class="pill what">무엇</span><span class="pill how">어떻게</span></div>
+      <p class="analogy">비유: 새 직원을 위한 자리와 사물함을 마련하는 단계입니다. 아직 업무 지시는 하지 않았지만, 이 사람만의 공간이 생겼습니다.</p>
 
-  <section id="overview">
-    <h2>완성까지 5단계</h2>
-    <div class="flow">
-      <div class="node"><div class="circle">1</div><div class="label">프로젝트<br>생성</div></div>
-      <div class="node"><div class="circle">2</div><div class="label">지침<br>설정</div></div>
-      <div class="node"><div class="circle">3</div><div class="label">자료<br>업로드</div></div>
-      <div class="node"><div class="circle">4</div><div class="label">커넥터<br>연결</div></div>
-      <div class="node"><div class="circle">5</div><div class="label">실전<br>대화</div></div>
-    </div>
-  </section>
-
-  <section id="step1" class="step">
-    <div class="step-head">
-      <div class="step-num">1</div>
-      <div>
-        <h3>프로젝트 만들기</h3>
-        <div class="sub">AI 비서가 살아갈 &ldquo;전용 공간&rdquo;을 먼저 만듭니다</div>
+      <div class="mock">
+        <div class="bar"><i></i><i></i><i></i><span class="url">claude.ai/projects</span></div>
+        <div class="body">
+          <span class="ghost">프로젝트</span>
+          <span class="btn">+ 새 프로젝트</span>
+        </div>
+        <div class="caption">화면 구성 예시 (모식도) &middot; 실제 UI와 배치는 다를 수 있습니다</div>
       </div>
-    </div>
-    <div class="pillrow"><span class="pill why">왜</span><span class="pill what">무엇</span><span class="pill how">어떻게</span></div>
-    <p class="analogy">비유: 새 직원을 위한 자리와 사물함을 마련하는 단계입니다. 아직 업무 지시는 하지 않았지만, 이 사람만의 공간이 생겼습니다.</p>
 
-    <div class="mock">
-      <div class="bar"><i></i><i></i><i></i><span class="url">claude.ai/projects</span></div>
-      <div class="body">
-        <span class="ghost">프로젝트</span>
-        <span class="btn">+ 새 프로젝트</span>
+      <ol class="howto">
+        <li>왼쪽 사이드바에서 <b>프로젝트(Projects)</b>를 클릭하거나, 주소창에 <code>claude.ai/projects</code>를 입력해 이동합니다.</li>
+        <li>화면 오른쪽 위 <b>+ 새 프로젝트(+ New Project)</b> 버튼을 클릭합니다.</li>
+        <li>프로젝트 <b>이름</b>과 <b>설명</b>을 입력합니다. (예: &ldquo;마케팅 카피 어시스턴트&rdquo;)</li>
+      </ol>
+
+      <div class="callout warn">
+        <span class="ico">!</span>
+        <div><b>주의 &mdash; 가장 흔한 오해</b>여기 적은 이름과 설명은 사람이 프로젝트를 구분하기 위한 &ldquo;라벨&rdquo;일 뿐, Claude가 실제로 참고하는 지침이 아닙니다. AI 비서의 실제 행동 규칙은 다음 단계인 <b>프로젝트 지침</b>에서 별도로 설정해야 합니다.</div>
       </div>
-      <div class="caption">화면 구성 예시 (모식도) &middot; 실제 UI와 배치는 다를 수 있습니다</div>
-    </div>
+    </section>
 
-    <ol class="howto">
-      <li>왼쪽 사이드바에서 <b>프로젝트(Projects)</b>를 클릭하거나, 주소창에 <code>claude.ai/projects</code>를 입력해 이동합니다.</li>
-      <li>화면 오른쪽 위 <b>+ 새 프로젝트(+ New Project)</b> 버튼을 클릭합니다.</li>
-      <li>프로젝트 <b>이름</b>과 <b>설명</b>을 입력합니다. (예: &ldquo;마케팅 카피 어시스턴트&rdquo;)</li>
-    </ol>
-
-    <div class="callout warn">
-      <span class="ico">!</span>
-      <div><b>주의 &mdash; 가장 흔한 오해</b>여기 적은 이름과 설명은 사람이 프로젝트를 구분하기 위한 &ldquo;라벨&rdquo;일 뿐, Claude가 실제로 참고하는 지침이 아닙니다. AI 비서의 실제 행동 규칙은 다음 단계인 <b>프로젝트 지침</b>에서 별도로 설정해야 합니다.</div>
-    </div>
-  </section>
-
-  <section id="step2" class="step">
-    <div class="step-head">
-      <div class="step-num">2</div>
-      <div>
-        <h3>프로젝트 지침 설정하기</h3>
-        <div class="sub">AI 비서의 역할·톤·규칙을 한 번만 정의하면 모든 대화에 자동 적용됩니다</div>
+    <section id="step2" class="panel step" hidden>
+      <div class="step-head">
+        <div class="step-num">2</div>
+        <div>
+          <h3>프로젝트 지침 설정하기</h3>
+          <div class="sub">AI 비서의 역할·톤·규칙을 한 번만 정의하면 모든 대화에 자동 적용됩니다</div>
+        </div>
       </div>
-    </div>
-    <div class="pillrow"><span class="pill why">왜</span><span class="pill what">무엇</span><span class="pill how">어떻게</span></div>
-    <p class="analogy">비유: 신입 직원에게 &ldquo;우리 팀에서는 이렇게 응대하고, 이런 형식으로 보고해주세요&rdquo;라고 업무 지침을 전달하는 단계입니다.</p>
+      <div class="pillrow"><span class="pill why">왜</span><span class="pill what">무엇</span><span class="pill how">어떻게</span></div>
+      <p class="analogy">비유: 신입 직원에게 &ldquo;우리 팀에서는 이렇게 응대하고, 이런 형식으로 보고해주세요&rdquo;라고 업무 지침을 전달하는 단계입니다.</p>
 
-    <ol class="howto">
-      <li>프로젝트 메인 화면 오른쪽(또는 하단) 영역에서 <b>프로젝트 지침 설정(Set project instructions)</b>을 클릭합니다.</li>
-      <li>AI 비서가 어떻게 답변하고 행동해야 하는지 지침을 작성합니다.</li>
-      <li><b>지침 저장(Save instructions)</b>을 눌러 저장합니다 &mdash; 이후 이 프로젝트의 모든 대화에 자동 적용됩니다.</li>
-    </ol>
+      <ol class="howto">
+        <li>프로젝트 메인 화면 오른쪽(또는 하단) 영역에서 <b>프로젝트 지침 설정(Set project instructions)</b>을 클릭합니다.</li>
+        <li>AI 비서가 어떻게 답변하고 행동해야 하는지 지침을 작성합니다.</li>
+        <li><b>지침 저장(Save instructions)</b>을 눌러 저장합니다 &mdash; 이후 이 프로젝트의 모든 대화에 자동 적용됩니다.</li>
+      </ol>
 
-    <p style="font-size:14.5px; color:var(--text-muted); margin-top:14px;">그대로 복사해서 시작해볼 수 있는 지침 예시입니다. 괄호 부분만 내 상황에 맞게 바꿔보세요.</p>
-    <div class="copybox">
-      <pre id="c1">당신은 (업무 영역, 예: 신규 입사자 온보딩)을 담당하는 AI 비서입니다.
+      <p style="font-size:14px; color:var(--text-muted); margin-top:14px;">그대로 복사해서 시작해볼 수 있는 지침 예시입니다. 괄호 부분만 내 상황에 맞게 바꿔보세요.</p>
+      <div class="copybox">
+        <pre id="c1">당신은 (업무 영역, 예: 신규 입사자 온보딩)을 담당하는 AI 비서입니다.
 
 - 답변은 항상 결론 먼저, 근거는 그 다음 순서로 작성하세요.
 - 확실하지 않은 정보는 추측하지 말고, 무엇이 부족한지 먼저 되물으세요.
 - 특별한 요청이 없으면 목록보다는 문장으로, 간결하게 답변하세요.
 - 존댓말을 사용하고, 불필요한 수식어는 생략하세요.</pre>
-      <button data-copy="c1">복사</button>
-    </div>
-
-    <div class="callout tip">
-      <span class="ico">i</span>
-      <div><b>팁</b>대화창에서 나눈 내용은 자동으로 프로젝트 지식에 저장되지 않습니다. 반복해서 쓸 규칙이나 정보라면 지침이나 3단계의 지식 베이스에 직접 넣어두어야 다음 대화에서도 기억합니다.</div>
-    </div>
-  </section>
-
-  <section id="step3" class="step">
-    <div class="step-head">
-      <div class="step-num">3</div>
-      <div>
-        <h3>지식 베이스(자료) 업로드하기</h3>
-        <div class="sub">AI 비서가 알아야 할 배경지식을 채워주는 단계</div>
+        <button data-copy="c1">복사</button>
       </div>
-    </div>
-    <div class="pillrow"><span class="pill why">왜</span><span class="pill what">무엇</span><span class="pill how">어떻게</span></div>
-    <p class="analogy">비유: 신입 직원 책상 위에 업무 매뉴얼, 지난 보고서, 참고 문서를 쌓아주는 단계입니다. 많이 줄수록 더 정확하게 일합니다.</p>
 
-    <ol class="howto">
-      <li>프로젝트 화면의 <b>프로젝트 지식(Project knowledge)</b> 영역에서 <b>+</b> 버튼을 클릭합니다.</li>
-      <li>문서, 텍스트 파일, 코드 스니펫 등 관련 자료를 업로드합니다.</li>
-      <li>업로드가 끝나면 Claude가 내용을 처리해, 이 프로젝트의 모든 대화에서 맥락으로 활용합니다.</li>
-    </ol>
-
-    <div class="callout tip">
-      <span class="ico">i</span>
-      <div><b>참고</b>유료 요금제에서는 업로드한 자료가 많아 컨텍스트 한도에 가까워지면, Claude가 자동으로 확장 검색 모드(RAG)를 켜서 더 많은 분량을 다룰 수 있게 해줍니다. 자료 양이 많다고 미리 걱정하지 않아도 됩니다.</div>
-    </div>
-    <div class="callout warn">
-      <span class="ico">!</span>
-      <div><b>주의</b>자주 바뀌는 정책·가격표·매뉴얼을 올려뒀다면, 내용이 바뀔 때마다 파일을 교체해줘야 합니다. 방치하면 AI 비서가 오래된 정보로 답할 수 있습니다.</div>
-    </div>
-  </section>
-
-  <section id="step4" class="step">
-    <div class="step-head">
-      <div class="step-num">4</div>
-      <div>
-        <h3>커넥터 연결하기</h3>
-        <div class="sub">메일함·캘린더·드라이브 등 &ldquo;실시간 도구함&rdquo;의 열쇠를 넘겨주는 단계</div>
+      <div class="callout tip">
+        <span class="ico">i</span>
+        <div><b>팁</b>대화창에서 나눈 내용은 자동으로 프로젝트 지식에 저장되지 않습니다. 반복해서 쓸 규칙이나 정보라면 지침이나 3단계의 지식 베이스에 직접 넣어두어야 다음 대화에서도 기억합니다.</div>
       </div>
-    </div>
-    <div class="pillrow"><span class="pill why">왜</span><span class="pill what">무엇</span><span class="pill how">어떻게</span></div>
+    </section>
 
-    <p class="analogy"><b>커넥터가 뭔가요?</b> AI 비서가 여러분이 평소 쓰는 다른 프로그램(구글 드라이브, 지메일, 캘린더 등)을 직접 열어볼 수 있게 이어주는 &ldquo;연결 다리&rdquo;입니다. 3단계 파일 업로드가 &ldquo;서류를 복사해서 서랍에 넣어두는 것&rdquo;이라면, 커넥터는 그 서랍이 아니라 원본 캐비닛 자체와 연결해두는 것입니다.</p>
-    <p class="analogy"><b>왜 필요한가요?</b> 업로드한 파일은 그 순간의 스냅샷이라, 원본이 나중에 바뀌어도 AI 비서는 예전 내용 그대로 알고 있습니다. 커넥터를 연결해두면 질문할 때마다 AI 비서가 원본을 실시간으로 열어보기 때문에, 오늘 온 메일이나 이번 주 일정처럼 &ldquo;계속 바뀌는 정보&rdquo;도 항상 최신 상태로 답해줍니다.</p>
-    <p class="analogy"><b>구글 드라이브 커넥터는요?</b> 여러 연결 다리 중 하나로, 구글 드라이브(문서 저장 창고)로 이어지는 다리입니다. 창고 전체를 다 공개하는 게 아니라, 그때그때 필요한 문서 하나를 검색하거나 지정해서 AI 비서가 찾아보게 해주는 방식입니다.</p>
-
-    <h4 style="font-size:15px; margin:20px 0 6px;">방법 A &middot; 대화 중 바로 연결</h4>
-    <div class="mock">
-      <div class="bar"><i></i><i></i><i></i><span class="url">채팅 입력창</span></div>
-      <div class="body">
-        <span class="ghost">+</span><span class="ghost">Google 드라이브에서 추가</span><span class="ghost">커넥터 ▸</span>
+    <section id="step3" class="panel step" hidden>
+      <div class="step-head">
+        <div class="step-num">3</div>
+        <div>
+          <h3>지식 베이스(자료) 업로드하기</h3>
+          <div class="sub">AI 비서가 알아야 할 배경지식을 채워주는 단계</div>
+        </div>
       </div>
-      <div class="caption">화면 구성 예시 (모식도)</div>
-    </div>
-    <ol class="howto">
-      <li>채팅 입력창의 <b>+</b> 버튼을 클릭합니다.</li>
-      <li><b>커넥터(Connectors)</b>에 마우스를 올리면 연결 가능한 도구 목록이 나타납니다 &mdash; 필요한 것만 켬(on)으로 전환합니다.</li>
-      <li>Google 드라이브 문서 하나만 첨부하고 싶다면 <b>Google 드라이브에서 추가(Add from Google Drive)</b>를 선택해 검색하거나 URL을 붙여넣습니다.</li>
-    </ol>
+      <div class="pillrow"><span class="pill why">왜</span><span class="pill what">무엇</span><span class="pill how">어떻게</span></div>
+      <p class="analogy">비유: 신입 직원 책상 위에 업무 매뉴얼, 지난 보고서, 참고 문서를 쌓아주는 단계입니다. 많이 줄수록 더 정확하게 일합니다.</p>
 
-    <h4 style="font-size:15px; margin:24px 0 6px;">방법 B &middot; 프로젝트에 상시 연결 (비공개 프로젝트만)</h4>
-    <ol class="howto">
-      <li>프로젝트를 열고 <b>파일(Files)</b> 영역을 찾습니다.</li>
-      <li><b>+</b> 버튼을 클릭한 뒤 <b>드라이브(Drive)</b>를 선택합니다.</li>
-      <li>문서를 검색하거나 URL을 붙여넣으면, 이 프로젝트의 지식 베이스로 상시 등록됩니다.</li>
-    </ol>
-    <div class="callout warn">
-      <span class="ico">!</span>
-      <div><b>주의</b>구글 드라이브를 프로젝트에 상시 연결하는 기능은 <b>비공개(private) 프로젝트</b>에서만 가능합니다. 조직과 공유된 프로젝트에서는 이 옵션이 비활성화되어 있습니다.</div>
-    </div>
+      <ol class="howto">
+        <li>프로젝트 화면의 <b>프로젝트 지식(Project knowledge)</b> 영역에서 <b>+</b> 버튼을 클릭합니다.</li>
+        <li>문서, 텍스트 파일, 코드 스니펫 등 관련 자료를 업로드합니다.</li>
+        <li>업로드가 끝나면 Claude가 내용을 처리해, 이 프로젝트의 모든 대화에서 맥락으로 활용합니다.</li>
+      </ol>
 
-    <h4 style="font-size:15px; margin:24px 0 6px;">방법 C &middot; 전체 커넥터 관리 / 재연결</h4>
-    <ol class="howto">
-      <li>화면 오른쪽 위 프로필 아이콘 &rarr; <b>환경설정(Customize)</b> &rarr; <b>커넥터(Connectors)</b> 메뉴로 이동합니다. (직접 접속: <code>claude.ai/customize/connectors</code>)</li>
-      <li>연결된 계정을 확인하거나, 문제가 있으면 <b>연결 해제(Disconnect)</b> 후 다시 연결(재인증)합니다.</li>
-      <li>더 많은 도구(Slack, Notion, GitHub 등)를 찾고 싶다면 <b>커넥터 디렉토리(Connectors Directory)</b>(<code>claude.ai/directory</code>)에서 둘러볼 수 있습니다. 조직 관리자가 허용한 커넥터만 표시됩니다.</li>
-    </ol>
-
-    <div class="callout tip">
-      <span class="ico">i</span>
-      <div><b>권한과 보안, 꼭 알아둘 것</b>
-      &middot; Claude는 여러분이 Google Workspace에서 이미 가진 권한 범위 안에서만 접근합니다 (권한을 넘어서지 않음).<br>
-      &middot; 메일 발송·전달처럼 실제 실행이 필요한 작업은 기본적으로 매번 사용자 승인을 거칩니다.<br>
-      &middot; Gmail 첨부파일 내용은 직접 읽지 못하고 메타데이터만 확인 가능한 등 아직 일부 제약이 있습니다.<br>
-      &middot; 회사 계정(Team/Enterprise)이라면, 관리자가 조직 설정에서 해당 커넥터를 먼저 켜줘야 개인이 연결할 수 있습니다.</div>
-    </div>
-  </section>
-
-  <section id="step5" class="step">
-    <div class="step-head">
-      <div class="step-num">5</div>
-      <div>
-        <h3>실전 활용 &mdash; 첫 대화 시작하기</h3>
-        <div class="sub">이제 프로젝트 안에서 새 대화를 열고 바로 일을 시켜봅니다</div>
+      <div class="callout tip">
+        <span class="ico">i</span>
+        <div><b>참고</b>유료 요금제에서는 업로드한 자료가 많아 컨텍스트 한도에 가까워지면, Claude가 자동으로 확장 검색 모드(RAG)를 켜서 더 많은 분량을 다룰 수 있게 해줍니다. 자료 양이 많다고 미리 걱정하지 않아도 됩니다.</div>
       </div>
-    </div>
-    <div class="pillrow"><span class="pill what">무엇</span><span class="pill how">어떻게</span></div>
-    <p>프로젝트 화면에서 새 대화를 시작하면, 지금까지 설정한 지침·자료·커넥터가 모두 자동으로 적용된 상태로 대화가 시작됩니다. 아래 예시를 그대로 복사해 테스트해보세요.</p>
+      <div class="callout warn">
+        <span class="ico">!</span>
+        <div><b>주의</b>자주 바뀌는 정책·가격표·매뉴얼을 올려뒀다면, 내용이 바뀔 때마다 파일을 교체해줘야 합니다. 방치하면 AI 비서가 오래된 정보로 답할 수 있습니다.</div>
+      </div>
+    </section>
 
-    <div class="copybox">
-      <pre id="c2">이번 주 내 캘린더 일정을 정리해서, 우선순위가 높은 순서대로 3줄 요약해줘.</pre>
-      <button data-copy="c2">복사</button>
-    </div>
-    <div class="copybox">
-      <pre id="c3">최근 받은 메일 중 아직 답장하지 않은 것을 찾아서, 정중한 톤으로 답장 초안을 만들어줘.</pre>
-      <button data-copy="c3">복사</button>
-    </div>
-    <div class="copybox">
-      <pre id="c4">업로드된 자료를 기준으로, 이 업무를 처음 맡은 사람이 헷갈릴 만한 질문 10개와 답을 FAQ 형식으로 만들어줘.</pre>
-      <button data-copy="c4">복사</button>
-    </div>
-  </section>
+    <section id="step4" class="panel step" hidden>
+      <div class="step-head">
+        <div class="step-num">4</div>
+        <div>
+          <h3>커넥터 연결하기</h3>
+          <div class="sub">메일함·캘린더·드라이브 등 &ldquo;실시간 도구함&rdquo;의 열쇠를 넘겨주는 단계</div>
+        </div>
+      </div>
+      <div class="pillrow"><span class="pill why">왜</span><span class="pill what">무엇</span><span class="pill how">어떻게</span></div>
 
-  <section id="mistakes">
-    <h2>초보자가 자주 하는 실수 5가지</h2>
-    <div class="mistakes">
-      <div class="mistake"><span class="x">01</span><p>프로젝트 <b>이름·설명</b>에 지침을 적어두고 &ldquo;AI가 알아서 하겠지&rdquo;라고 생각한다.<span class="fix">→ 실제 지침은 반드시 2단계 &ldquo;Set project instructions&rdquo;에 따로 작성</span></p></div>
-      <div class="mistake"><span class="x">02</span><p>지식 베이스에 자료를 한 번 올려두고 그 뒤로 업데이트하지 않는다.<span class="fix">→ 정책·매뉴얼이 바뀌면 파일을 교체하거나 새로 업로드</span></p></div>
-      <div class="mistake"><span class="x">03</span><p>커넥터를 연결했는데 권한 승인 창을 놓쳐서 &ldquo;작동이 안 된다&rdquo;고 오해한다.<span class="fix">→ 최초 연결 시 Google 계정 인증, 실행 요청 시 승인 팝업을 확인</span></p></div>
-      <div class="mistake"><span class="x">04</span><p>조직과 공유된 프로젝트에서 Google Drive 상시 연결이 안 보여 헤맨다.<span class="fix">→ 이 기능은 비공개 프로젝트 전용, 공유 프로젝트는 미지원</span></p></div>
-      <div class="mistake"><span class="x">05</span><p>대화창에서만 계속 대화하고 지식 베이스에는 아무것도 반영하지 않아, 매번 같은 배경 설명을 반복한다.<span class="fix">→ 반복되는 정보는 지침 또는 지식 베이스로 옮겨 저장</span></p></div>
-    </div>
-  </section>
+      <p class="analogy"><b>커넥터가 뭔가요?</b> AI 비서가 여러분이 평소 쓰는 다른 프로그램(구글 드라이브, 지메일, 캘린더 등)을 직접 열어볼 수 있게 이어주는 &ldquo;연결 다리&rdquo;입니다. 3단계 파일 업로드가 &ldquo;서류를 복사해서 서랍에 넣어두는 것&rdquo;이라면, 커넥터는 그 서랍이 아니라 원본 캐비닛 자체와 연결해두는 것입니다.</p>
+      <p class="analogy"><b>왜 필요한가요?</b> 업로드한 파일은 그 순간의 스냅샷이라, 원본이 나중에 바뀌어도 AI 비서는 예전 내용 그대로 알고 있습니다. 커넥터를 연결해두면 질문할 때마다 AI 비서가 원본을 실시간으로 열어보기 때문에, 오늘 온 메일이나 이번 주 일정처럼 &ldquo;계속 바뀌는 정보&rdquo;도 항상 최신 상태로 답해줍니다.</p>
+      <p class="analogy"><b>구글 드라이브 커넥터는요?</b> 여러 연결 다리 중 하나로, 구글 드라이브(문서 저장 창고)로 이어지는 다리입니다. 창고 전체를 다 공개하는 게 아니라, 그때그때 필요한 문서 하나를 검색하거나 지정해서 AI 비서가 찾아보게 해주는 방식입니다.</p>
 
-  <footer>
-    이 가이드는 2026년 9월 기준 Claude Help Center 공식 문서(Projects, Google Workspace 커넥터)를 바탕으로 작성했습니다. Claude의 화면 구성과 메뉴 위치는 업데이트에 따라 달라질 수 있으니, 실제 화면과 다르면 claude.ai 내 최신 안내를 우선 확인하세요.
-  </footer>
+      <h4 style="font-size:14.5px; margin:20px 0 6px;">방법 A &middot; 대화 중 바로 연결</h4>
+      <div class="mock">
+        <div class="bar"><i></i><i></i><i></i><span class="url">채팅 입력창</span></div>
+        <div class="body">
+          <span class="ghost">+</span><span class="ghost">Google 드라이브에서 추가</span><span class="ghost">커넥터 ▸</span>
+        </div>
+        <div class="caption">화면 구성 예시 (모식도)</div>
+      </div>
+      <ol class="howto">
+        <li>채팅 입력창의 <b>+</b> 버튼을 클릭합니다.</li>
+        <li><b>커넥터(Connectors)</b>에 마우스를 올리면 연결 가능한 도구 목록이 나타납니다 &mdash; 필요한 것만 켬(on)으로 전환합니다.</li>
+        <li>Google 드라이브 문서 하나만 첨부하고 싶다면 <b>Google 드라이브에서 추가(Add from Google Drive)</b>를 선택해 검색하거나 URL을 붙여넣습니다.</li>
+      </ol>
+
+      <h4 style="font-size:14.5px; margin:22px 0 6px;">방법 B &middot; 프로젝트에 상시 연결 (비공개 프로젝트만)</h4>
+      <ol class="howto">
+        <li>프로젝트를 열고 <b>파일(Files)</b> 영역을 찾습니다.</li>
+        <li><b>+</b> 버튼을 클릭한 뒤 <b>드라이브(Drive)</b>를 선택합니다.</li>
+        <li>문서를 검색하거나 URL을 붙여넣으면, 이 프로젝트의 지식 베이스로 상시 등록됩니다.</li>
+      </ol>
+      <div class="callout warn">
+        <span class="ico">!</span>
+        <div><b>주의</b>구글 드라이브를 프로젝트에 상시 연결하는 기능은 <b>비공개(private) 프로젝트</b>에서만 가능합니다. 조직과 공유된 프로젝트에서는 이 옵션이 비활성화되어 있습니다.</div>
+      </div>
+
+      <h4 style="font-size:14.5px; margin:22px 0 6px;">방법 C &middot; 전체 커넥터 관리 / 재연결</h4>
+      <ol class="howto">
+        <li>화면 오른쪽 위 프로필 아이콘 &rarr; <b>환경설정(Customize)</b> &rarr; <b>커넥터(Connectors)</b> 메뉴로 이동합니다. (직접 접속: <code>claude.ai/customize/connectors</code>)</li>
+        <li>연결된 계정을 확인하거나, 문제가 있으면 <b>연결 해제(Disconnect)</b> 후 다시 연결(재인증)합니다.</li>
+        <li>더 많은 도구(Slack, Notion, GitHub 등)를 찾고 싶다면 <b>커넥터 디렉토리(Connectors Directory)</b>(<code>claude.ai/directory</code>)에서 둘러볼 수 있습니다. 조직 관리자가 허용한 커넥터만 표시됩니다.</li>
+      </ol>
+
+      <div class="callout tip">
+        <span class="ico">i</span>
+        <div><b>권한과 보안, 꼭 알아둘 것</b>
+        &middot; Claude는 여러분이 Google Workspace에서 이미 가진 권한 범위 안에서만 접근합니다 (권한을 넘어서지 않음).<br>
+        &middot; 메일 발송·전달처럼 실제 실행이 필요한 작업은 기본적으로 매번 사용자 승인을 거칩니다.<br>
+        &middot; Gmail 첨부파일 내용은 직접 읽지 못하고 메타데이터만 확인 가능한 등 아직 일부 제약이 있습니다.<br>
+        &middot; 회사 계정(Team/Enterprise)이라면, 관리자가 조직 설정에서 해당 커넥터를 먼저 켜줘야 개인이 연결할 수 있습니다.</div>
+      </div>
+    </section>
+
+    <section id="step5" class="panel step" hidden>
+      <div class="step-head">
+        <div class="step-num">5</div>
+        <div>
+          <h3>실전 활용 &mdash; 첫 대화 시작하기</h3>
+          <div class="sub">이제 프로젝트 안에서 새 대화를 열고 바로 일을 시켜봅니다</div>
+        </div>
+      </div>
+      <div class="pillrow"><span class="pill what">무엇</span><span class="pill how">어떻게</span></div>
+      <p>프로젝트 화면에서 새 대화를 시작하면, 지금까지 설정한 지침·자료·커넥터가 모두 자동으로 적용된 상태로 대화가 시작됩니다. 아래 예시를 그대로 복사해 테스트해보세요.</p>
+
+      <div class="copybox">
+        <pre id="c2">이번 주 내 캘린더 일정을 정리해서, 우선순위가 높은 순서대로 3줄 요약해줘.</pre>
+        <button data-copy="c2">복사</button>
+      </div>
+      <div class="copybox">
+        <pre id="c3">최근 받은 메일 중 아직 답장하지 않은 것을 찾아서, 정중한 톤으로 답장 초안을 만들어줘.</pre>
+        <button data-copy="c3">복사</button>
+      </div>
+      <div class="copybox">
+        <pre id="c4">업로드된 자료를 기준으로, 이 업무를 처음 맡은 사람이 헷갈릴 만한 질문 10개와 답을 FAQ 형식으로 만들어줘.</pre>
+        <button data-copy="c4">복사</button>
+      </div>
+    </section>
+
+    <section id="mistakes" class="panel" hidden>
+      <h2>초보자가 자주 하는 실수 5가지</h2>
+      <div class="mistakes">
+        <div class="mistake"><span class="x">01</span><p>프로젝트 <b>이름·설명</b>에 지침을 적어두고 &ldquo;AI가 알아서 하겠지&rdquo;라고 생각한다.<span class="fix">→ 실제 지침은 반드시 2단계 &ldquo;Set project instructions&rdquo;에 따로 작성</span></p></div>
+        <div class="mistake"><span class="x">02</span><p>지식 베이스에 자료를 한 번 올려두고 그 뒤로 업데이트하지 않는다.<span class="fix">→ 정책·매뉴얼이 바뀌면 파일을 교체하거나 새로 업로드</span></p></div>
+        <div class="mistake"><span class="x">03</span><p>커넥터를 연결했는데 권한 승인 창을 놓쳐서 &ldquo;작동이 안 된다&rdquo;고 오해한다.<span class="fix">→ 최초 연결 시 Google 계정 인증, 실행 요청 시 승인 팝업을 확인</span></p></div>
+        <div class="mistake"><span class="x">04</span><p>조직과 공유된 프로젝트에서 Google Drive 상시 연결이 안 보여 헤맨다.<span class="fix">→ 이 기능은 비공개 프로젝트 전용, 공유 프로젝트는 미지원</span></p></div>
+        <div class="mistake"><span class="x">05</span><p>대화창에서만 계속 대화하고 지식 베이스에는 아무것도 반영하지 않아, 매번 같은 배경 설명을 반복한다.<span class="fix">→ 반복되는 정보는 지침 또는 지식 베이스로 옮겨 저장</span></p></div>
+      </div>
+      <footer>
+        이 가이드는 2026년 9월 기준 Claude Help Center 공식 문서(Projects, Google Workspace 커넥터)를 바탕으로 작성했습니다. Claude의 화면 구성과 메뉴 위치는 업데이트에 따라 달라질 수 있으니, 실제 화면과 다르면 claude.ai 내 최신 안내를 우선 확인하세요.
+      </footer>
+    </section>
+
+  </main>
+
+  <div class="bottombar">
+    <button type="button" class="navbtn ghost" data-nav="prev">‹ 이전</button>
+    <span class="progress" id="progressLabel">1 / 7</span>
+    <button type="button" class="navbtn primary" data-nav="next">다음 ›</button>
+  </div>
 
 </div>
 
 <script>
 (function(){
+  var panels = ['intro','step1','step2','step3','step4','step5','mistakes'];
+  var current = 0;
+
+  function showPanel(id){
+    var idx = panels.indexOf(id);
+    if(idx === -1) return;
+    current = idx;
+    panels.forEach(function(p){
+      var el = document.getElementById(p);
+      if(el) el.hidden = (p !== id);
+    });
+    document.querySelectorAll('.tabnav button').forEach(function(b){
+      var active = b.getAttribute('data-target') === id;
+      b.classList.toggle('active', active);
+      if(active){ b.scrollIntoView({behavior:'smooth', inline:'center', block:'nearest'}); }
+    });
+    var prevBtn = document.querySelector('[data-nav="prev"]');
+    var nextBtn = document.querySelector('[data-nav="next"]');
+    if(prevBtn) prevBtn.disabled = (current === 0);
+    if(nextBtn) nextBtn.disabled = (current === panels.length - 1);
+    var label = document.getElementById('progressLabel');
+    if(label) label.textContent = (current + 1) + ' / ' + panels.length;
+    window.scrollTo(0, 0);
+  }
+
+  document.querySelectorAll('.tabnav button[data-target], .flow .node[data-target]').forEach(function(b){
+    b.addEventListener('click', function(){ showPanel(b.getAttribute('data-target')); });
+  });
+  var prevBtn = document.querySelector('[data-nav="prev"]');
+  var nextBtn = document.querySelector('[data-nav="next"]');
+  if(prevBtn) prevBtn.addEventListener('click', function(){ if(current > 0) showPanel(panels[current - 1]); });
+  if(nextBtn) nextBtn.addEventListener('click', function(){ if(current < panels.length - 1) showPanel(panels[current + 1]); });
+
   document.querySelectorAll('.copybox button[data-copy]').forEach(function(btn){
     btn.addEventListener('click', function(){
       var target = document.getElementById(btn.getAttribute('data-copy'));
@@ -505,7 +582,10 @@
       }
     });
   });
+
+  showPanel('intro');
 })();
 </script>
+
 </body>
 </html>
